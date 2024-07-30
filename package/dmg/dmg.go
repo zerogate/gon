@@ -14,14 +14,13 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
 
 	"github.com/hashicorp/go-hclog"
 
-	"github.com/bearer/gon/internal/createdmg"
+	"github.com/zerogate/gon/internal/createdmg"
 )
 
 // Options are the options for creating the dmg archive.
@@ -63,6 +62,9 @@ type Options struct {
 
 	// make a drop link to Applications, at location x, y
 	AppDropLink []string
+
+	// Set background image
+	Background string
 
 	// Logger is the logger to use. If this is nil then no logging will be done.
 	Logger hclog.Logger
@@ -131,12 +133,16 @@ func Dmg(ctx context.Context, opts *Options) error {
 		args = append(args, opts.AppDropLink...)
 	}
 
+	if opts.Background != "" {
+		args = append(args, "--background", opts.Background)
+	}
+
 	// Set our root directory. If one wasn't specified, we create an empty
 	// temporary directory to act as our root and we just use the flags to
 	// inject our files.
 	root := opts.Root
 	if root == "" {
-		td, err := ioutil.TempDir("", "gon")
+		td, err := os.MkdirTemp("", "gon")
 		if err != nil {
 			return err
 		}

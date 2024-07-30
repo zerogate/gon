@@ -1,4 +1,4 @@
-module github.com/bearer/gon
+module github.com/zerogate/gon
 
 go 1.13
 

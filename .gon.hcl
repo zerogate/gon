@@ -1,5 +1,5 @@
 source = ["./dist/macos_darwin_amd64_v1/gon"]
-bundle_id = "com.bearer.gon"
+bundle_id = "com.zerogate.tools.gon"
 
 sign {}
 

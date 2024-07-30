@@ -55,7 +55,7 @@ brews:
     name: gon
     folder: Formula
     repository:
-      owner: Bearer
+      owner: zerogate
       name: homebrew-tap
       token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
     description: "Sign, notarize, and package macOS CLI applications written in any language."
