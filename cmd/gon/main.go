@@ -239,6 +239,7 @@ func realMain() int {
 				IconSize:    cfg.Dmg.IconSize,
 				Icon:        cfg.Dmg.Icon,
 				AppDropLink: cfg.Dmg.AppDropLink,
+				Background:  cfg.Dmg.Background,
 				Logger:      logger.Named("dmg"),
 			})
 			if err != nil {
