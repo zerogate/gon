@@ -90,6 +90,9 @@ type Dmg struct {
 	// Set position of the file's icon
 	Icon []string `hcl:"icon,optional"`
 
+	// Set background image
+	Background string `hcl:"background,optional"`
+
 	// make a drop link to Applications, at location x, y
 	AppDropLink []string `hcl:"app_drop_link,optional"`
 }

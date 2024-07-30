@@ -13,10 +13,10 @@ import (
 	"github.com/hashicorp/go-hclog"
 	"github.com/hashicorp/go-multierror"
 
-	"github.com/bearer/gon/internal/config"
-	"github.com/bearer/gon/package/dmg"
-	"github.com/bearer/gon/package/zip"
-	"github.com/bearer/gon/sign"
+	"github.com/zerogate/gon/internal/config"
+	"github.com/zerogate/gon/package/dmg"
+	"github.com/zerogate/gon/package/zip"
+	"github.com/zerogate/gon/sign"
 )
 
 // Set by build process
@@ -346,7 +346,7 @@ or JSON format. The JSON format makes it particularly easy to machine-generate
 the configuration and pass it into gon.
 
 For example configurations as well as full help text, see the README on GitHub:
-http://github.com/bearer/gon
+http://github.com/zerogate/gon
 
 Flags:
 `

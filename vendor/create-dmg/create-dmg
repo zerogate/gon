@@ -124,6 +124,8 @@ Options:
       notarize the disk image (waits and staples) with the keychain stored credentials
   --sandbox-safe
       execute hdiutil with sandbox compatibility and do not bless (not supported for APFS disk images)
+  --skip-jenkins
+      skip Finder-prettifying AppleScript, useful in Sandbox and non-GUI environments
   --version
 	    show create-dmg version number
   -h, --help
@@ -144,7 +146,7 @@ function find_mount_dir() {
 	for i in {1..9}; do
 		# attempt to find the partition
 		local found_dir
-		found_dir=$(hdiutil info | grep -E --color=never "${dev_name}" | head -${i} | awk '{print $3}')
+		found_dir=$(hdiutil info | grep -E --color=never "${dev_name}" | head -${i} | awk '{print $3}' | xargs)
 		if [[ -n "${found_dir}" ]]; then
 				echo "${found_dir}"
 				return 0
@@ -417,10 +419,18 @@ MOUNT_RANDOM_PATH="/Volumes"
 if [[ $SANDBOX_SAFE -eq 1 ]]; then
 	MOUNT_RANDOM_PATH="/tmp"
 fi
-DEV_NAME=$(hdiutil attach -mountrandom ${MOUNT_RANDOM_PATH} -readwrite -noverify -noautoopen -nobrowse "${DMG_TEMP_NAME}" | grep -E --color=never '^/dev/' | sed 1q | awk '{print $1}')
+if [[ "$FILESYSTEM" == "APFS" ]]; then
+  HDIUTIL_FILTER="tail -n 1"
+else
+  HDIUTIL_FILTER="sed 1q"
+fi
+DEV_NAME=$(hdiutil attach -mountrandom ${MOUNT_RANDOM_PATH} -readwrite -noverify -noautoopen -nobrowse "${DMG_TEMP_NAME}" | grep -E --color=never '^/dev/' | ${HDIUTIL_FILTER} | awk '{print $1}')
 echo "Device name:     $DEV_NAME"
-MOUNT_DIR=$(find_mount_dir "${DEV_NAME}s")
-
+if [[ "$FILESYSTEM" == "APFS" ]]; then
+  MOUNT_DIR=$(find_mount_dir "${DEV_NAME}")
+else
+	MOUNT_DIR=$(find_mount_dir "${DEV_NAME}s")
+fi
 if [[ -z "${MOUNT_DIR}" ]]; then
   >&2 echo "ERROR: unable to proceed with final disk image creation because the interstitial disk image was not found."
   >&2 echo "The interstitial disk image will likely be mounted and will need to be cleaned up manually."
@@ -479,7 +489,12 @@ else
 			| perl -pe "s/APPLICATION_CLAUSE/$APPLICATION_CLAUSE/g" \
 			| perl -pe "s/HIDING_CLAUSE/$HIDING_CLAUSE/" \
 			> "$APPLESCRIPT_FILE"
-		sleep 2 # pause to workaround occasional "Can’t get disk" (-1728) issues  
+
+		# pause to workaround occasional "Can’t get disk" (-1728) issues
+		ERROR_1728_WORKAROUND_SLEEP_INTERVAL=2
+		echo "Will sleep for $ERROR_1728_WORKAROUND_SLEEP_INTERVAL seconds to workaround occasions \"Can't get disk (-1728)\" issues..."
+		sleep $ERROR_1728_WORKAROUND_SLEEP_INTERVAL
+
 		echo "Running AppleScript to make Finder stuff pretty: /usr/bin/osascript \"${APPLESCRIPT_FILE}\" \"${VOLUME_NAME}\""
 		if /usr/bin/osascript "${APPLESCRIPT_FILE}" "${VOLUME_NAME}"; then
 			# Okay, we're cool
@@ -492,6 +507,12 @@ else
 		echo "Done running the AppleScript..."
 		sleep 4
 		rm "$APPLESCRIPT_FILE"
+	else
+		echo ''
+		echo "Will skip running AppleScript to configure DMG aesthetics because of --skip-jenkins option."
+		echo "This will result in a DMG without any custom background or icons positioning."
+		echo "More info at https://github.com/create-dmg/create-dmg/issues/72"
+		echo ''
 	fi
 fi
 
@@ -557,7 +578,7 @@ if [[ -n "${EULA_RSRC}" && "${EULA_RSRC}" != "-null-" ]]; then
 	# EULA_DATA="$(base64 -b 52 "${EULA_RSRC}" | sed s$'/^\(.*\)$/\t\t\t\\1/')"
 	EULA_DATA="$(openssl base64 -in "${EULA_RSRC}" | tr -d '\n' | awk '{gsub(/.{52}/,"&\n")}1' | sed s$'/^\(.*\)$/\t\t\t\\1/')"
 	# Fill the template with the custom EULA contents
-	eval "cat > \"${EULA_RESOURCES_FILE}\" <<EOF                                                                                                                  
+	eval "cat > \"${EULA_RESOURCES_FILE}\" <<EOF
 	$(<${CDMG_SUPPORT_DIR}/eula-resources-template.xml)
 	EOF
 	"
@@ -583,7 +604,7 @@ else
 fi
 
 if [[ -n "${SIGNATURE}" && "${SIGNATURE}" != "-null-" ]]; then
-	echo "Codesign started"	
+	echo "Codesign started"
 	codesign -s "${SIGNATURE}" "${DMG_DIR}/${DMG_NAME}"
 	dmgsignaturecheck="$(codesign --verify --deep --verbose=2 --strict "${DMG_DIR}/${DMG_NAME}" 2>&1 >/dev/null)"
 	if [ $? -eq 0 ]; then
@@ -595,7 +616,7 @@ if [[ -n "${SIGNATURE}" && "${SIGNATURE}" != "-null-" ]]; then
 fi
 
 if [[ -n "${NOTARIZE}" && "${NOTARIZE}" != "-null-" ]]; then
-	echo "Notarization started"	
+	echo "Notarization started"
 	xcrun notarytool submit "${DMG_DIR}/${DMG_NAME}" --keychain-profile "${NOTARIZE}" --wait
 	echo "Stapling the notarization ticket"
 	staple="$(xcrun stapler staple "${DMG_DIR}/${DMG_NAME}")"

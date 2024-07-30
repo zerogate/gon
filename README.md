@@ -44,7 +44,7 @@ gon helps you automate the process of notarization.
 - Notarize packages and wait for the notarization to complete
 - Concurrent notarization for multiple output formats
 - Stapling notarization tickets to supported formats (dmg) so that
-    Gatekeeper validation works offline.
+  Gatekeeper validation works offline.
 
 ## Example
 
@@ -56,10 +56,10 @@ The example below runs `gon` against itself to generate a zip and dmg.
 
 The easiest way to install `gon` is via [Homebrew](https://brew.sh):
 
-    brew install Bearer/tap/gon
+    brew install zerogate/tap/gon
 
 You may also download the appropriate release for your platform
-from the [releases page](https://github.com/Bearer/gon/releases).
+from the [releases page](https://github.com/zerogate/gon/releases).
 These are all signed and notarized to run out of the box on macOS 10.15+.
 
 You can also compile from source using Go 1.13 or later using standard
@@ -68,7 +68,7 @@ You can also compile from source using Go 1.13 or later using standard
 ## Usage
 
 `gon` requires a configuration file that can be specified as a file path
-or passed in via stdin.  The configuration specifies
+or passed in via stdin. The configuration specifies
 all the settings `gon` will use to sign and package your files.
 
 **gon must be run on a macOS machine with XCode 11.0 or later.** Code
@@ -91,38 +91,38 @@ Xcode is easier if you already have it installed.
 
 Via the web:
 
-  1. Sign into [developer.apple.com](https://developer.apple.com) with valid
-     Apple ID credentials. You may need to sign up for an Apple developer account.
+1. Sign into [developer.apple.com](https://developer.apple.com) with valid
+   Apple ID credentials. You may need to sign up for an Apple developer account.
 
-  2. Navigate to the [certificates](https://developer.apple.com/account/resources/certificates/list)
-     page.
+2. Navigate to the [certificates](https://developer.apple.com/account/resources/certificates/list)
+   page.
 
-  3. Click the "+" icon, select "Developer ID Application" and follow the steps.
+3. Click the "+" icon, select "Developer ID Application" and follow the steps.
 
-  4. After downloading the certificate, double-click to import it into your
-     keychain. If you're building on a CI machine, every CI machine must have
-     this certificate in their keychain.
+4. After downloading the certificate, double-click to import it into your
+   keychain. If you're building on a CI machine, every CI machine must have
+   this certificate in their keychain.
 
 Via Xcode:
 
-  1. Open Xcode and go to Xcode => Preferences => Accounts
+1. Open Xcode and go to Xcode => Preferences => Accounts
 
-  2. Click the "+" in the bottom left and add your Apple ID if you haven't already.
+2. Click the "+" in the bottom left and add your Apple ID if you haven't already.
 
-  3. Select your Apple account and click "Manage Certificates" in the bottom
-     right corner.
+3. Select your Apple account and click "Manage Certificates" in the bottom
+   right corner.
 
-  4. Click "+" in the bottom left corner and click "Developer ID Application".
+4. Click "+" in the bottom left corner and click "Developer ID Application".
 
-  5. Right-click the newly created cert in the list, click "export" and
-     export the file as a p12-formatted certificate. _Save this somewhere_.
-     You'll never be able to download it again.
+5. Right-click the newly created cert in the list, click "export" and
+   export the file as a p12-formatted certificate. _Save this somewhere_.
+   You'll never be able to download it again.
 
 To verify you did this correctly, you can inspect your keychain:
 
 ```sh
 $ security find-identity -v
-  1) 359452C7CD2B5F8A64059FF1C130B105F235BEAF "Developer ID Application: Bearer Inc (5T2VP4YAG8)"
+  1) 9458DF741D327F07095C1C398B3F3F02114F6C10 "Developer ID Application: ZeroGate Inc. (H99WAPW98H)"
      1 valid identities found
 ```
 
@@ -140,15 +140,15 @@ Example:
 
 ```hcl
 source = ["./example"]
-bundle_id = "com.bearer.example"
+bundle_id = "com.zerogate.tools.example"
 
 apple_id {
-  username = "bearer@example.com"
-  provider = "5T2VP4YAG8"
+  username = "zerogate@example.com"
+  provider = "H99WAPW98H"
 }
 
 sign {
-  application_identity = "Developer ID Application: Bearer Inc"
+  application_identity = "Developer ID Application: ZeroGate Inc."
 }
 
 dmg {
@@ -163,102 +163,102 @@ zip {
 
 ```json
 {
-    "source" : ["./example"],
-    "bundle_id" : "com.bearer.example",
-    "apple_id": {
-        "username" : "bearer@example.com",
-        "provider":  "5T2VP4YAG8"
-    },
-    "sign" :{
-        "application_identity" : "Developer ID Application: Bearer Inc"
-    },
-    "dmg" :{
-        "output_path":  "example.dmg",
-        "volume_name":  "Example"
-    },
-    "zip" :{
-        "output_path" : "example.zip"
-    }
+  "source": ["./example"],
+  "bundle_id": "com.zerogate.tools.example",
+  "apple_id": {
+    "username": "zerogate@example.com",
+    "provider": "H99WAPW98H"
+  },
+  "sign": {
+    "application_identity": "Developer ID Application: ZeroGate Inc."
+  },
+  "dmg": {
+    "output_path": "example.dmg",
+    "volume_name": "Example"
+  },
+  "zip": {
+    "output_path": "example.zip"
+  }
 }
 ```
 
 Supported configurations:
 
 - `source` (`array<string>`) - A list of files to sign, package, and
-    notarize. If you want to sign multiple files with different identities
-    or into different packages, then you should invoke `gon` with separate
-    configurations. This is optional if you're using the notarization-only
- mode with the `notarize` block.
+  notarize. If you want to sign multiple files with different identities
+  or into different packages, then you should invoke `gon` with separate
+  configurations. This is optional if you're using the notarization-only
+  mode with the `notarize` block.
 
 - `bundle_id` (`string`) - The [bundle ID](https://cocoacasts.com/what-are-app-ids-and-bundle-identifiers/)
-    for your application. You should choose something unique for your application.
-    You can also [register these with Apple](https://developer.apple.com/account/resources/identifiers/list).
-    This is optional if you're using the notarization-only
- mode with the `notarize` block.
+  for your application. You should choose something unique for your application.
+  You can also [register these with Apple](https://developer.apple.com/account/resources/identifiers/list).
+  This is optional if you're using the notarization-only
+  mode with the `notarize` block.
 
 - `apple_id` - Settings related to the Apple ID to use for notarization.
 
   - `username` (`string`) - The Apple ID username, typically an email address.
-      This will default to the `AC_USERNAME` environment variable if not set.
+    This will default to the `AC_USERNAME` environment variable if not set.
 
   - `password` (`string`) - The password for the associated Apple ID.
-      This will default to the `AC_PASSWORD` environment variable if not set.
+    This will default to the `AC_PASSWORD` environment variable if not set.
 
-      **NOTE**: If you have 2FA enabled, the password must be an application password, not
-      your normal apple id password. See [Troubleshooting](#troubleshooting) for details.
+    **NOTE**: If you have 2FA enabled, the password must be an application password, not
+    your normal apple id password. See [Troubleshooting](#troubleshooting) for details.
 
   - `provider` (`string`) - The App Store Connect provider when using
-      multiple teams within App Store Connect. If this isn't set, we'll attempt
-      to read the `AC_PROVIDER` environment variable as a default.
+    multiple teams within App Store Connect. If this isn't set, we'll attempt
+    to read the `AC_PROVIDER` environment variable as a default.
 
 - `sign` - Settings related to signing files.
 
   - `application_identity` (`string`) - The name or ID of the "Developer ID Application"
-      certificate to use to sign applications. This accepts any valid value for the `-s`
-      flag for the `codesign` binary on macOS. See `man codesign` for detailed
-      documentation on accepted values. If this isn't set, we'll attempt to read
-      the `AC_APPLICATION_IDENTITY` environment variable as a default.
+    certificate to use to sign applications. This accepts any valid value for the `-s`
+    flag for the `codesign` binary on macOS. See `man codesign` for detailed
+    documentation on accepted values. If this isn't set, we'll attempt to read
+    the `AC_APPLICATION_IDENTITY` environment variable as a default.
 
   - `entitlements_file` (`string` _optional_) - The full path to a plist format .entitlements file, used for the `--entitlements` argument to `codesign`
 
 - `dmg` (_optional_) - Settings related to creating a disk image (dmg) as output.
-    This will only be created if this is specified. The dmg will also have the
-    notarization ticket stapled so that it can be verified offline and
-    _do not_ require internet to use.
+  This will only be created if this is specified. The dmg will also have the
+  notarization ticket stapled so that it can be verified offline and
+  _do not_ require internet to use.
 
   - `output_path` (`string`) - The path to create the zip archive. If this path
-      already exists, it will be overwritten. All files in `source` will be copied
-      into the root of the zip archive.
+    already exists, it will be overwritten. All files in `source` will be copied
+    into the root of the zip archive.
 
   - `volume_name` (`string`) - The name of the mounted dmg that shows up
-      in finder, the mounted file path, etc.
+    in finder, the mounted file path, etc.
 
 - `zip` (_optional_) - Settings related to creating a zip archive as output. A zip archive
-    will only be created if this is specified. Note that zip archives don't support
-    stapling, meaning that files within the notarized zip archive will require an
-    internet connection to verify on first use.
+  will only be created if this is specified. Note that zip archives don't support
+  stapling, meaning that files within the notarized zip archive will require an
+  internet connection to verify on first use.
 
   - `output_path` (`string`) - The path to create the zip archive. If this path
-      already exists, it will be overwritten. All files in `source` will be copied
-      into the root of the zip archive.
+    already exists, it will be overwritten. All files in `source` will be copied
+    into the root of the zip archive.
 
 Notarization-only mode:
 
 - `notarize` (_optional_) - Settings for notarizing already built files.
-    This is an alternative to using the `source` option. This option can be
-    repeated to notarize multiple files.
+  This is an alternative to using the `source` option. This option can be
+  repeated to notarize multiple files.
 
   - `path` (`string`) - The path to the file to notarize. This must be
-      one of Apple's supported file types for notarization: dmg, pkg, app, or
-      zip.
+    one of Apple's supported file types for notarization: dmg, pkg, app, or
+    zip.
 
   - `bundle_id` (`string`) - The bundle ID to use for this notarization.
-      This is used instead of the top-level `bundle_id` (which controls the
-      value for source-based runs).
+    This is used instead of the top-level `bundle_id` (which controls the
+    value for source-based runs).
 
   - `staple` (`bool` _optional_) - Controls if `stapler staple` should run
-      if notarization succeeds. This should only be set for filetypes that
-      support it (dmg, pkg, or app).
+    if notarization succeeds. This should only be set for filetypes that
+    support it (dmg, pkg, or app).
 
 ### Notarization-Only Configuration
 
@@ -281,25 +281,27 @@ Example in HCL and then the identical configuration in JSON:
 ```hcl
 notarize {
   path = "/path/to/example.pkg"
-  bundle_id = "com.bearer.example"
+  bundle_id = "com.zerogate.tools.example"
   staple = true
 }
 
 apple_id {
-  username = "bearer@example.com"
+  username = "zerogate@example.com"
 }
 ```
 
 ```json
 {
-  "notarize": [{
-    "path": "/path/to/example.pkg",
-    "bundle_id": "com.bearer.example",
-    "staple": true
-  }],
+  "notarize": [
+    {
+      "path": "/path/to/example.pkg",
+      "bundle_id": "com.zerogate.tools.example",
+      "staple": true
+    }
+  ],
 
   "apple_id": {
-     "username": "bearer@example.com",
+    "username": "zerogate@example.com"
   }
 }
 ```
@@ -344,7 +346,7 @@ Example:
 
     gon -log-level=info -log-json ./config.hcl
 
- ...
+...
 
 **Note you must specify _both_ `-log-level` and `-log-json`.** The
 `-log-level` flag enables logging in general. An `info` level is enough
@@ -372,30 +374,30 @@ Here is an example GoReleaser configuration to sign your binaries:
 
 ```yaml
 builds:
-- binary: foo
-  id: foo
-  goos:
-  - linux
-  - windows
-  goarch:
-  - amd64
-# notice that we need a separated build for the macos binary only:
-- binary: foo
-  id: foo-macos
-  goos:
-  - darwin
-  goarch:
-  - amd64
+  - binary: foo
+    id: foo
+    goos:
+      - linux
+      - windows
+    goarch:
+      - amd64
+  # notice that we need a separated build for the macos binary only:
+  - binary: foo
+    id: foo-macos
+    goos:
+      - darwin
+    goarch:
+      - amd64
 signs:
   - signature: "${artifact}.dmg"
     ids:
-    - foo-macos # here we filter the macos only build id
+      - foo-macos # here we filter the macos only build id
     # you'll need to have gon on PATH
     cmd: gon
     # you can follow the gon docs to properly create the gon.hcl config file:
-    # https://github.com/Bearer/gon
+    # https://github.com/zerogate/gon
     args:
-    - gon.hcl
+      - gon.hcl
     artifacts: all
 ```
 
@@ -403,7 +405,7 @@ To learn more, see the [GoReleaser documentation](https://goreleaser.com/customi
 
 ## Go Library
 
-[![Godoc](https://godoc.org/github.com/bearer/gon?status.svg)](https://godoc.org/github.com/bearer/gon)
+[![Godoc](https://godoc.org/github.com/zerogate/gon?status.svg)](https://godoc.org/github.com/zerogate/gon)
 
 We also expose a supported API for signing, packaging, and notarizing
 files using the Go programming language. Please see the linked Go documentation
